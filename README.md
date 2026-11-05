@@ -1,8 +1,8 @@
-# RigCraft — Custom PC Builder & Hardware Platform
+# Kompo — Custom PC Builder & Hardware Platform
 
 ## Project Overview (Business Logic & Concept)
 
-**RigCraft** is a web platform designed for exploring computer hardware, peripherals, and planning custom PC builds. The service allows users to browse a catalog of components (from CPUs and power supplies to monitors), compare specifications, assemble hardware configurations in a virtual workbench with automated compatibility validation, and receive AI-powered build reviews and tailored part recommendations.
+**Kompo** is a web platform designed for exploring computer hardware, peripherals, and planning custom PC builds. The service allows users to browse a catalog of components (from CPUs and power supplies to monitors), compare specifications, assemble hardware configurations in a virtual workbench with automated compatibility validation, and receive AI-powered build reviews and tailored part recommendations.
 
 ### Core Features:
 1. **Hardware & Peripherals Catalog:**
