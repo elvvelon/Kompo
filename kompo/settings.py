@@ -120,6 +120,24 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Django REST Framework Configuration
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'hardware.exceptions.custom_exception_handler',
+    'COERCE_DECIMAL_TO_STRING': False,
+}
+
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+]
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
