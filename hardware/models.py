@@ -16,6 +16,7 @@ class Category(models.Model):
     slug = models.SlugField(max_length=100, unique=True)
     description = models.TextField(blank=True)
     max_per_build = models.PositiveIntegerField(default=1)
+    is_periphery = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Categories"
