@@ -1,8 +1,8 @@
-# RigCraft — Custom PC Builder & Hardware Platform
+# Kompo — Custom PC Builder & Hardware Platform
 
 ## Project Overview (Business Logic & Concept)
 
-**RigCraft** is a web platform designed for exploring computer hardware, peripherals, and planning custom PC builds. The service allows users to browse a catalog of components (from CPUs and power supplies to monitors), compare specifications, assemble hardware configurations in a virtual workbench with automated compatibility validation, and receive AI-powered build reviews and tailored part recommendations.
+**Kompo** is a web platform designed for exploring computer hardware, peripherals, and planning custom PC builds. The service allows users to browse a catalog of components (from CPUs and power supplies to monitors), compare specifications, assemble hardware configurations in a virtual workbench with automated compatibility validation, and receive AI-powered build reviews and tailored part recommendations.
 
 ### Core Features:
 1. **Hardware & Peripherals Catalog:**
@@ -38,6 +38,78 @@
    - **AI Part Picker:** Suggests a compatible set of components from the catalog based on a user's natural language prompt and target budget.
 9. **"About Us" Page:**
    - Static information page containing platform details, contact information, delivery terms, and return policies.
+
+---
+
+## Getting Started (How to Run the Project)
+
+### Prerequisites
+- **Python 3.12+** installed on your machine
+- **pip** (Python package manager)
+
+### 1. Clone the Repository & Navigate to the Project Directory
+```bash
+git clone https://github.com/elvvelon/Kompo.git
+cd Kompo
+```
+
+### 2. Create and Activate a Virtual Environment
+macOS / Linux:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+Windows:
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+### 3. Install Dependencies
+Install all required packages from the dependencies file:   
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Apply Database Migrations
+Initialize the database schema by running Django migrations:   
+
+```bash
+python manage.py migrate
+```
+
+### 5. Seed Initial Data (Optional)
+Populate the database with initial hardware manufacturers, categories, and sample PC components:   
+
+```bash
+python manage.py seed_data
+```
+
+### 6. Create a Superuser (Optional)
+To access the Django Admin panel, create an administrator account:   
+
+```bash
+python manage.py createsuperuser
+```
+
+### 7. Run the Development Server
+Start the local Django development server:   
+
+```bash
+python manage.py runserver
+```
+Once the server is running, you can access:   
+
+* **REST API Base URL:** http://127.0.0.1:8000/api/
+* **Django Admin Panel:** http://127.0.0.1:8000/admin/
+
+### 8. Running Tests & Postman Collection
+* Automated Unit Tests: Run the test suite to verify API endpoints and error handling:
+    ```bash
+    python manage.py test
+    ```
+
+* **Postman Collection**: Import postman/KompoAPI.postman_collection.json into Postman and set the base_url collection variable to http://127.0.0.1:8000 to test all endpoints interactively.
 
 ---
 

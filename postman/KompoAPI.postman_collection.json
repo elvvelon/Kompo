@@ -1,0 +1,605 @@
+{
+  "info": {
+    "_postman_id": "4a1916be-f343-4ac8-96c2-b496daf5e402",
+    "name": "Kompo API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "42829259"
+  },
+  "item": [
+    {
+      "name": "Components",
+      "item": [
+        {
+          "name": "List All Components (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/components",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "components"
+              ]
+            },
+            "description": "Retrieve all hardware components in the catalog."
+          },
+          "response": []
+        },
+        {
+          "name": "Search, Filter & Sort Components (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/components?search=Ryzen&category_id=1&sort_by=price&order=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "components"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Ryzen"
+                },
+                {
+                  "key": "category_id",
+                  "value": "1"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "price"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Filter components by search query, category_id,manufacturer_id and sort by price."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Component Details by ID (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/components/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "components",
+                "1"
+              ]
+            },
+            "description": "Retrieve full specifications and details of a single component."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Component (201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ASUS ROG STRIX B650E-F GAMING WIFI\",\n  \"sku\": \"90MB1BQ0-M0EAY0\",\n  \"price\": 289.99,\n  \"power_watts\": 50,\n  \"popularity_score\": 92,\n  \"description\": \"High-end AM5 ATX motherboard with PCIe 5.0 and WiFi 6E.\",\n  \"specifications\": {\n    \"socket\": \"AM5\",\n    \"memory_type\": \"DDR5\",\n    \"form_factor\": \"ATX\",\n    \"memory_slots\": 4\n  },\n  \"image_url\": \"https://example.com/images/strix-b650e.jpg\",\n  \"manufacturer_id\": 3,\n  \"category_id\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/components",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "components"
+              ]
+            },
+            "description": "Create a new hardware component."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Component (200 OK)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"AMD Ryzen 7 7800X3D\",\n  \"sku\": \"100-100000910WOF\",\n  \"price\": 399.00,\n  \"power_watts\": 120,\n  \"popularity_score\": 99,\n  \"description\": \"8-core, 16-thread desktop processor with 3D V-Cache technology (Price updated).\",\n  \"specifications\": {\n    \"socket\": \"AM5\",\n    \"cores\": 8,\n    \"threads\": 16,\n    \"base_clock_ghz\": 4.2\n  },\n  \"image_url\": \"https://example.com/images/r7-7800x3d.jpg\",\n  \"manufacturer_id\": 1,\n  \"category_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/components/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "components",
+                "1"
+              ]
+            },
+            "description": "Update an existing component's details."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Component (204 No Content)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/components/6",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "components",
+                "6"
+              ]
+            },
+            "description": "Delete a component by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 404] Get Non-Existent Component",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/components/9999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "components",
+                "9999"
+              ]
+            },
+            "description": "Demonstrates 404 Not Found with unified error format."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 400] Create Component with Invalid Price (<= 0)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Broken Price Component\",\n  \"sku\": \"ERR-PRICE-001\",\n  \"price\": -50.00,\n  \"power_watts\": 100,\n  \"manufacturer_id\": 1,\n  \"category_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/components",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "components"
+              ]
+            },
+            "description": "Demonstrates 400 Bad Request when price is negative or zero."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 400] List Components with Invalid sort_by",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/components?sort_by=invalid_column",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "components"
+              ],
+              "query": [
+                {
+                  "key": "sort_by",
+                  "value": "invalid_column"
+                }
+              ]
+            },
+            "description": "Demonstrates 400 Bad Request when an unsupported sort_by parameter is passed."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Manufacturers",
+      "item": [
+        {
+          "name": "List All Manufacturers (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/manufacturers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "manufacturers"
+              ]
+            },
+            "description": "Retrieve all hardware manufacturers."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Manufacturer by ID (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/manufacturers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "manufacturers",
+                "1"
+              ]
+            },
+            "description": "Retrieve manufacturer details along with its catalog components."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Manufacturer (201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Corsair\",\n  \"country\": \"USA\",\n  \"founded_year\": 1994,\n  \"description\": \"High-performance gaming peripherals, memory, power supplies, and PC cases.\",\n  \"logo_url\": \"https://example.com/logos/corsair.png\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/manufacturers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "manufacturers"
+              ]
+            },
+            "description": "Add a new manufacturer."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Manufacturer (200 OK)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"AMD\",\n  \"country\": \"USA\",\n  \"founded_year\": 1969,\n  \"description\": \"Global semiconductor company developing Ryzen processors and Radeon graphics technologies.\",\n  \"logo_url\": \"https://upload.wikimedia.org/wikipedia/commons/7/7c/AMD_Logo.svg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/manufacturers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "manufacturers",
+                "1"
+              ]
+            },
+            "description": "Update an existing manufacturer."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 409] Delete Manufacturer with Existing Components",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/manufacturers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "manufacturers",
+                "1"
+              ]
+            },
+            "description": "Demonstrates 409 Conflict business rule: cannot delete a manufacturer that still has components in the catalog."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 400] Create Manufacturer with Invalid Founded Year",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"FutureTech Corp\",\n  \"country\": \"USA\",\n  \"founded_year\": 2099,\n  \"description\": \"Invalid future founded year.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/manufacturers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "manufacturers"
+              ]
+            },
+            "description": "Demonstrates 400 Bad Request when founded_year is outside the valid range."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 404] Get Non-Existent Manufacturer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/manufacturers/9999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "manufacturers",
+                "9999"
+              ]
+            },
+            "description": "Demonstrates 404 Not Found for a non-existent manufacturer ID."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List All Categories (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories"
+              ]
+            },
+            "description": "Retrieve all hardware and peripheral categories."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category by ID (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories",
+                "1"
+              ]
+            },
+            "description": "Retrieve category details and all components belonging to it."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category (201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"PC Cases\",\n  \"slug\": \"cases\",\n  \"description\": \"Enclosures and chassis for desktop computer builds.\",\n  \"max_per_build\": 1,\n  \"is_periphery\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories"
+              ]
+            },
+            "description": "Create a new hardware category."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category (200 OK)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Processors (CPU)\",\n  \"slug\": \"cpus\",\n  \"description\": \"Central processing units for desktop workstations and gaming rigs.\",\n  \"max_per_build\": 1,\n  \"is_periphery\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/categories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories",
+                "1"
+              ]
+            },
+            "description": "Update an existing category."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Empty Category (204 No Content)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories/6",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories",
+                "6"
+              ]
+            },
+            "description": "Delete a category that has 0 components (e.g. Monitors category id=6 from seed_data)."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 409] Delete Category with Existing Components",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories",
+                "1"
+              ]
+            },
+            "description": "Demonstrates 409 Conflict business rule: cannot delete a category that still contains components."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 400] Create Category with Invalid max_per_build",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Invalid Category\",\n  \"slug\": \"invalid-cat\",\n  \"description\": \"Zero max_per_build test\",\n  \"max_per_build\": 0,\n  \"is_periphery\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories"
+              ]
+            },
+            "description": "Demonstrates 400 Bad Request when max_per_build is less than 1."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 404] Get Non-Existent Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories/9999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "categories",
+                "9999"
+              ]
+            },
+            "description": "Demonstrates 404 Not Found for a non-existent category ID."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    }
+  ]
+}
