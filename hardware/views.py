@@ -4,20 +4,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .exceptions import build_error_response
-from .models import Category, Component, Manufacturer
-from .serializers import (
-    CategoryDetailSerializer,
-    CategoryListSerializer,
-    ComponentDetailSerializer,
-    ComponentListSerializer,
-    ManufacturerDetailSerializer,
-    ManufacturerListSerializer,
-)
+from .serializers import *
+from users.permissions import IsAdminOrReadOnly
 
 
 class BaseDetailAPIView(APIView):
     model = None
     queryset = None
+    permission_classes = (IsAdminOrReadOnly,)
 
     @classmethod
     def _get_object(cls, pk: int):
@@ -43,6 +37,8 @@ class ComponentListCreateAPIView(APIView):
     GET /api/components  - List components with search, filtering, and sorting.
     POST /api/components - Create a new component.
     """
+
+    permission_classes = (IsAdminOrReadOnly,)
 
     SORT_FIELDS_MAP = {
         "price": "price",
@@ -173,6 +169,7 @@ class ManufacturerListCreateAPIView(APIView):
     GET /api/manufacturers  - List all manufacturers.
     POST /api/manufacturers - Create a new manufacturer.
     """
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get(self, request):
         manufacturers = Manufacturer.objects.all().order_by("id")
@@ -254,6 +251,7 @@ class CategoryListCreateAPIView(APIView):
     GET /api/categories  - List all hardware categories.
     POST /api/categories - Create a new hardware category.
     """
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get(self, request):
         categories = Category.objects.all().order_by("id")
