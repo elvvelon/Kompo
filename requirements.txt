@@ -8,3 +8,5 @@ djangorestframework-stubs==3.18.2
 sqlparse==0.6.1
 types-PyYAML==6.0.12.20261103
 typing_extensions==4.16.0
+
+djangorestframework-simplejwt
