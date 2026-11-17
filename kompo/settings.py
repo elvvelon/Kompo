@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'drf_spectacular',
     'corsheaders',
     'hardware',
     'users',
@@ -128,12 +129,48 @@ STATIC_URL = 'static/'
 REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'hardware.exceptions.custom_exception_handler',
     'COERCE_DECIMAL_TO_STRING': False,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly'
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     )
+}
+
+# OpenAPI / drf-spectacular Configuration
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Kompo API — Custom PC Builder & Hardware Platform',
+    'DESCRIPTION': (
+        'REST API for browsing PC hardware components, manufacturers, and categories, '
+        'managing a virtual PC workbench with automated hardware compatibility validation, '
+        'and sharing completed PC builds.'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'TAGS': [
+        {
+            'name': 'Users & Authentication',
+            'description': 'User registration, JWT authentication, token rotation, logout, and profile endpoints.',
+        },
+        {
+            'name': 'Components',
+            'description': 'PC hardware & peripheral components catalog with search, filtering, and sorting.',
+        },
+        {
+            'name': 'Manufacturers',
+            'description': 'Hardware brands directory and manufacturer component listings.',
+        },
+        {
+            'name': 'Categories',
+            'description': 'Equipment categories and per-build component quantity quotas (max_per_build).',
+        },
+        {
+            'name': 'Builds & Workbench',
+            'description': 'Virtual PC workbench, automated compatibility engine, build checkout, and public showcase.',
+        },
+    ],
 }
 
 # CORS Configuration

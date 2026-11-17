@@ -216,3 +216,19 @@ class ComponentDetailSerializer(serializers.ModelSerializer):
         if not isinstance(value, dict):
             raise serializers.ValidationError("specifications must be a JSON object.")
         return value
+
+
+# --- ERROR RESPONSE ---
+
+class ErrorDetailSerializer(serializers.Serializer):
+    status_code = serializers.IntegerField()
+    code = serializers.CharField()
+    message = serializers.CharField()
+    details = serializers.DictField(default=dict)
+
+
+class ErrorResponseSerializer(serializers.Serializer):
+    """
+    Unified error envelope returned by all API endpoints.
+    """
+    error = ErrorDetailSerializer()
