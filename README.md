@@ -124,15 +124,53 @@ python manage.py runserver
 Once the server is running, you can access:
 
 - **REST API Base URL:** `http://127.0.0.1:8000/api/`
+- **Swagger UI (Interactive API Documentation):** [http://127.0.0.1:8000/api/docs/](http://127.0.0.1:8000/api/docs/)
+- **OpenAPI 3.0 Schema Endpoint:** [http://127.0.0.1:8000/api/schema/](http://127.0.0.1:8000/api/schema/)
 - **Django Admin Panel:** `http://127.0.0.1:8000/admin/`
 
-### 8. Running Tests & Postman Collection
+### 8. Running Tests & Measuring Code Coverage
 
-- **Automated Unit Tests:** Run the test suite across `hardware`, `users`, and `builds` apps to verify API endpoints, permissions, compatibility engine, and error handling:
-  ```bash
-  python manage.py test
-  ```
-- **Postman Collection:** Import `postman/KompoAPI.postman_collection.json` into Postman and set the `base_url` collection variable to `http://127.0.0.1:8000` (and `access_token` / `refresh_token` after registering or logging in) to test all endpoints interactively.
+1. **Run the Full Test Suite:**
+   Execute all automated unit and API integration tests across the `hardware`, `users`, and `builds` apps:
+   ```bash
+   python manage.py test
+   ```
+
+2. **Run Tests for a Specific App:**
+   ```bash
+   python manage.py test hardware
+   python manage.py test users
+   python manage.py test builds
+   ```
+
+3. **Measure Test Coverage (`coverage.py`):**
+   Run the test suite under `coverage` and display the terminal coverage report with missing lines:
+   ```bash
+   coverage run manage.py test
+   coverage report -m
+   ```
+   *(Optional)* Generate an interactive HTML coverage report in `htmlcov/index.html`:
+   ```bash
+   coverage html
+   ```
+
+4. **Postman Collection:**
+   Import `postman/KompoAPI.postman_collection.json` into Postman and set the `base_url` collection variable to `http://127.0.0.1:8000` (and `access_token` / `refresh_token` after registering or logging in) to test all endpoints interactively.
+
+### 9. OpenAPI Documentation (Swagger UI & Schema)
+
+The API is documented using **OpenAPI 3.0** powered by `drf-spectacular`:
+
+- **Swagger UI:** [http://127.0.0.1:8000/api/docs/](http://127.0.0.1:8000/api/docs/) — interactive documentation where you can inspect schemas, authorize with a Bearer JWT token, and test endpoints directly in the browser.
+- **How to Obtain the OpenAPI Schema:**
+  - **Via HTTP (YAML, default):** `GET http://127.0.0.1:8000/api/schema/`
+  - **Via HTTP (JSON):** `GET http://127.0.0.1:8000/api/schema/?format=json`
+  - **Via Django Management Command (export to file):**
+    ```bash
+    python manage.py spectacular --color --file schema.yml
+    ```
+
+
 
 ---
 
@@ -313,9 +351,30 @@ erDiagram
   }
   ```
 
-#### `POST /api/users/login/` & `POST /api/users/logout/`
-- **Usage:** Django built-in session authentication views (`LoginView` / `LogoutView`) for browsable/session workflows.
-- **Response Status:** `200 OK` / `302 Found`.
+#### `POST /api/users/login/`
+- **Usage:** Authenticate with `username` and `password` to obtain a JWT `access` and `refresh` token pair.
+- **Permissions:** `AllowAny`.
+- **Request Body:**
+  ```json
+  {
+    "username": "vvelon_builder",
+    "password": "StrongPassword123!"
+  }
+  ```
+- **Response Status:** `200 OK` (or `401 Unauthorized` on invalid credentials).
+
+#### `POST /api/users/logout/`
+- **Usage:** Log out the authenticated user by blacklisting their JWT `refresh` token.
+- **Permissions:** `IsAuthenticated`.
+- **Headers:** `Authorization: Bearer <access_token>`
+- **Request Body:**
+  ```json
+  {
+    "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
+- **Response Status:** `200 OK` (or `400 Bad Request` if the refresh token is missing, invalid, or already blacklisted, `401 Unauthorized`).
+
 
 ---
 
