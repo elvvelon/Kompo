@@ -17,3 +17,8 @@ ENV/
 Thumbs.db
 #Data base
 db.sqlite3
+# Logs & Coverage
+logs/
+*.log
+.coverage
+htmlcov/

@@ -1,8 +1,12 @@
+import logging
 import math
 from collections import defaultdict
 from decimal import Decimal
 
 from .models import Build, BuildItem
+
+logger = logging.getLogger(__name__)
+
 
 
 CPU_SLUGS = {'cpus', 'cpu', 'processors', 'processor'}
@@ -232,4 +236,21 @@ def recalculate_build(build: Build, save: bool = True) -> list[str]:
     if save:
         build.save(update_fields=['total_price', 'total_power_watts', 'is_compatible', 'updated_at'])
 
+    logger.debug(
+        'Recalculated build id=%s: total_price=%s, total_power_watts=%dW, is_compatible=%s, issues_count=%d',
+        build.id,
+        total_price,
+        total_power_watts,
+        is_compatible,
+        len(issues),
+    )
+    if not is_compatible:
+        logger.info(
+            'Build id=%s has %d compatibility issue(s): %s',
+            build.id,
+            len(issues),
+            '; '.join(issues),
+        )
+
     return issues
+

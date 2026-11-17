@@ -1,6 +1,11 @@
+import logging
+
 from rest_framework.exceptions import ErrorDetail, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
+
+logger = logging.getLogger(__name__)
+
 
 
 def build_error_response(
@@ -52,8 +57,11 @@ def custom_exception_handler(exc, context):
     }
     """
     response = exception_handler(exc, context)
+    view = context.get("view")
+    view_name = view.__class__.__name__ if view is not None else "UnknownView"
 
     if response is None:
+        logger.error("Unhandled exception in %s: %s", view_name, exc, exc_info=True)
         return None
 
     status_code = response.status_code
@@ -78,6 +86,23 @@ def custom_exception_handler(exc, context):
             message = _extract_first_error_message(response.data) or "An error occurred while processing the request."
             details = response.data if isinstance(response.data, dict) else {}
 
+    if status_code >= 500:
+        logger.error(
+            "API server error (%s) in %s [code=%s]: %s",
+            status_code,
+            view_name,
+            code,
+            message,
+        )
+    else:
+        logger.warning(
+            "API client error (%s) in %s [code=%s]: %s",
+            status_code,
+            view_name,
+            code,
+            message,
+        )
+
     response.data = {
         "error": {
             "status_code": status_code,
@@ -87,3 +112,4 @@ def custom_exception_handler(exc, context):
         }
     }
     return response
+
