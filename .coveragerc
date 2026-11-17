@@ -1,0 +1,19 @@
+[run]
+source =
+    hardware
+    users
+    builds
+    kompo
+omit =
+    */migrations/*
+    */tests.py
+    */admin.py
+    */apps.py
+    */management/*
+    kompo/asgi.py
+    kompo/wsgi.py
+    manage.py
+
+[report]
+show_missing = True
+skip_empty = True
