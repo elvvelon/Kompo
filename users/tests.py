@@ -11,8 +11,8 @@ from .serializers import RegistrationSerializer
 class UsersAPITestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.register_url = "/api/users/register"
-        self.me_url = "/api/users/me"
+        self.register_url = "/api/users/register/"
+        self.me_url = "/api/users/me/"
         self.refresh_url = "/api/users/token/refresh/"
 
         self.user_data = {
@@ -133,6 +133,46 @@ class UsersAPITestCase(TestCase):
             self.refresh_url, {"refresh": old_refresh_str}, format="json"
         )
         self.assertEqual(reuse_response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_login_and_logout_blacklist_flow(self):
+        user = User.objects.create_user(
+            username="login_user",
+            email="login@example.com",
+            password="StrongPassword123!",
+        )
+        login_res = self.client.post(
+            "/api/users/login/",
+            {"username": "login_user", "password": "StrongPassword123!"},
+            format="json",
+        )
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access_token = login_res.data["access"]
+        refresh_token = login_res.data["refresh"]
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+
+        # Missing refresh token -> 400
+        missing_res = self.client.post("/api/users/logout/", {}, format="json")
+        self.assertEqual(missing_res.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Invalid refresh token -> 400
+        invalid_res = self.client.post(
+            "/api/users/logout/", {"refresh": "invalid.token.str"}, format="json"
+        )
+        self.assertEqual(invalid_res.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Valid refresh token -> 200 OK and blacklists token
+        logout_res = self.client.post(
+            "/api/users/logout/", {"refresh": refresh_token}, format="json"
+        )
+        self.assertEqual(logout_res.status_code, status.HTTP_200_OK)
+
+        # Reusing blacklisted refresh token on logout -> 400
+        repeat_res = self.client.post(
+            "/api/users/logout/", {"refresh": refresh_token}, format="json"
+        )
+        self.assertEqual(repeat_res.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 
 class RegistrationSerializerUnitTest(TestCase):

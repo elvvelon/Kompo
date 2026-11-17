@@ -495,3 +495,99 @@ class BuildsAPITestCase(TestCase):
 
         forbidden_del = self.client.delete(f"/api/builds/{other_build.id}")
         self.assertEqual(forbidden_del.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Owner can delete their own build -> 204
+        own_del = self.client.delete(f"/api/builds/{completed.id}")
+        self.assertEqual(own_del.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_workbench_increment_put_not_found_and_public_query_errors(self):
+        # Add 1 RAM stick, then add 1 more of the same RAM stick -> quantity increments to 2
+        self.client.post(
+            "/api/builds/current/items",
+            {"component_id": self.ram_ddr5.id, "quantity": 1},
+            format="json",
+        )
+        res_inc = self.client.post(
+            "/api/builds/current/items",
+            {"component_id": self.ram_ddr5.id, "quantity": 1},
+            format="json",
+        )
+        self.assertEqual(res_inc.status_code, status.HTTP_201_CREATED)
+        item_id = res_inc.data["items"][0]["item_id"]
+        self.assertEqual(res_inc.data["items"][0]["quantity"], 2)
+
+        # PUT item quantity
+        put_res = self.client.put(
+            f"/api/builds/current/items/{item_id}",
+            {"quantity": 3},
+            format="json",
+        )
+        self.assertEqual(put_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(put_res.data["items"][0]["quantity"], 3)
+
+        # 404 on non-existent workbench item
+        self.assertEqual(
+            self.client.patch(
+                "/api/builds/current/items/9999", {"quantity": 1}, format="json"
+            ).status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.delete("/api/builds/current/items/9999").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+        # Public builds invalid query params & is_compatible=false filter
+        self.assertEqual(
+            self.client.get("/api/builds/public?is_compatible=false").status_code,
+            status.HTTP_200_OK,
+        )
+        for bad_q in (
+            "is_compatible=maybe",
+            "order=sideways",
+            "sort_by=unknown",
+        ):
+            bad_res = self.client.get(f"/api/builds/public?{bad_q}")
+            self.assertEqual(bad_res.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Build detail 404 and unauthenticated 401
+        self.assertEqual(
+            self.client.get("/api/builds/9999").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.patch("/api/builds/9999", {"title": "X"}, format="json").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.delete("/api/builds/9999").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+        draft_id = res_inc.data["id"]
+        # Owner viewing own draft build via /api/builds/{id}
+        own_draft_detail = self.client.get(f"/api/builds/{draft_id}")
+        self.assertEqual(own_draft_detail.status_code, status.HTTP_200_OK)
+
+        build_obj = Build.objects.get(pk=draft_id)
+        item_obj = BuildItem.objects.get(pk=item_id)
+        self.assertIn("Draft Build", str(build_obj))
+        self.assertIn(self.ram_ddr5.name, str(item_obj))
+
+        # Anonymous user accessing draft build -> 401
+        self.client.credentials()
+        self.assertEqual(
+            self.client.get(f"/api/builds/{draft_id}").status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+        self.assertEqual(
+            self.client.patch(
+                f"/api/builds/{draft_id}", {"title": "Anon"}, format="json"
+            ).status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+        self.assertEqual(
+            self.client.delete(f"/api/builds/{draft_id}").status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+

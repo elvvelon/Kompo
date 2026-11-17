@@ -262,3 +262,158 @@ class HardwareAPITestCase(TestCase):
         # Delete empty category -> 204 No Content
         empty_del_res = self.client.delete(f"/api/categories/{self.empty_category.id}")
         self.assertEqual(empty_del_res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_component_detail_get_and_desc_sorting_and_not_found_mutations(self):
+        detail_res = self.client.get(f"/api/components/{self.cpu.id}")
+        self.assertEqual(detail_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(detail_res.data["sku"], "100-100000910WOF")
+
+        desc_res = self.client.get("/api/components?order=desc")
+        self.assertEqual(desc_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(desc_res.data), 1)
+
+        self.authenticate_admin()
+        self.assertEqual(
+            self.client.put("/api/components/9999", {}, format="json").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.patch("/api/components/9999", {}, format="json").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.delete("/api/components/9999").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_manufacturer_put_patch_validation_and_not_found(self):
+        self.authenticate_admin()
+        put_res = self.client.put(
+            f"/api/manufacturers/{self.amd.id}",
+            {
+                "name": "AMD Inc.",
+                "country": "USA",
+                "founded_year": 1969,
+                "description": "Updated description.",
+                "logo_url": "https://example.com/logos/amd.png",
+            },
+            format="json",
+        )
+        self.assertEqual(put_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(put_res.data["name"], "AMD Inc.")
+
+        patch_res = self.client.patch(
+            f"/api/manufacturers/{self.amd.id}",
+            {"country": "United States"},
+            format="json",
+        )
+        self.assertEqual(patch_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(patch_res.data["country"], "United States")
+
+        # Invalid founded_year and duplicate name
+        bad_year = self.client.post(
+            "/api/manufacturers",
+            {"name": "OldBrand", "country": "UK", "founded_year": 1700},
+            format="json",
+        )
+        self.assertEqual(bad_year.status_code, status.HTTP_400_BAD_REQUEST)
+
+        dup_name = self.client.post(
+            "/api/manufacturers",
+            {"name": "Noctua", "country": "Austria", "founded_year": 2005},
+            format="json",
+        )
+        self.assertEqual(dup_name.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # 404 on PUT, PATCH, DELETE
+        self.assertEqual(
+            self.client.put("/api/manufacturers/9999", {}, format="json").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.patch("/api/manufacturers/9999", {}, format="json").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.delete("/api/manufacturers/9999").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_category_put_patch_validation_and_not_found(self):
+        self.authenticate_admin()
+        put_res = self.client.put(
+            f"/api/categories/{self.cpu_category.id}",
+            {
+                "name": "Desktop Processors",
+                "slug": "cpus",
+                "description": "Updated CPUs.",
+                "max_per_build": 1,
+                "is_periphery": False,
+            },
+            format="json",
+        )
+        self.assertEqual(put_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(put_res.data["name"], "Desktop Processors")
+
+        patch_res = self.client.patch(
+            f"/api/categories/{self.cpu_category.id}",
+            {"max_per_build": 2},
+            format="json",
+        )
+        self.assertEqual(patch_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(patch_res.data["max_per_build"], 2)
+
+        # Invalid max_per_build
+        bad_max = self.client.post(
+            "/api/categories",
+            {"name": "Invalid Cat", "slug": "invalid-cat", "max_per_build": 64},
+            format="json",
+        )
+        self.assertEqual(bad_max.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # 404 on PUT, PATCH, DELETE
+        self.assertEqual(
+            self.client.put("/api/categories/9999", {}, format="json").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.patch("/api/categories/9999", {}, format="json").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.delete("/api/categories/9999").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_component_power_and_popularity_validation_and_model_str(self):
+        self.authenticate_admin()
+        for bad_field in (
+            {"power_watts": 5000},
+            {"popularity_score": 10},
+        ):
+            payload = {
+                "name": "Bad Component",
+                "sku": "BAD-SKU-01",
+                "price": 100.00,
+                "power_watts": 100,
+                "popularity_score": 3,
+                "manufacturer_id": self.amd.id,
+                "category_id": self.cpu_category.id,
+                **bad_field,
+            }
+            res = self.client.post("/api/components", payload, format="json")
+            self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(str(self.amd), "AMD")
+        self.assertEqual(str(self.cpu_category), "Processors")
+        self.assertEqual(str(self.cpu), "AMD Ryzen 7 7800X3D (100-100000910WOF)")
+
+    def test_openapi_schema_and_swagger_endpoints(self):
+        self.clear_authentication()
+        schema_res = self.client.get("/api/schema/")
+        self.assertEqual(schema_res.status_code, status.HTTP_200_OK)
+
+        swagger_res = self.client.get("/api/docs/")
+        self.assertEqual(swagger_res.status_code, status.HTTP_200_OK)
+
+
