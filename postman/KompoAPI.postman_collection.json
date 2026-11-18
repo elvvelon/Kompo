@@ -7,6 +7,175 @@
   },
   "item": [
     {
+      "name": "Authentication & Users",
+      "item": [
+        {
+          "name": "Register User (201 Created)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.access) { pm.collectionVariables.set('access_token', jsonData.access); }",
+                  "    if (jsonData.refresh) { pm.collectionVariables.set('refresh_token', jsonData.refresh); }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"vvelon_builder\",\n  \"first_name\": \"Danylo\",\n  \"last_name\": \"Maister\",\n  \"email\": \"vvelon@example.com\",\n  \"password\": \"StrongPassword123!\",\n  \"password_confirmation\": \"StrongPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "register"
+              ]
+            },
+            "description": "Register a new user account and store access_token and refresh_token in collection variables."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh JWT Token (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.access) { pm.collectionVariables.set('access_token', jsonData.access); }",
+                  "    if (jsonData.refresh) { pm.collectionVariables.set('refresh_token', jsonData.refresh); }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/token/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "token",
+                "refresh",
+                ""
+              ]
+            },
+            "description": "Rotate refresh token and obtain a new access token (old refresh token is blacklisted)."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User Profile (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me"
+              ]
+            },
+            "description": "Retrieve the authenticated user's profile details and is_staff flag."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 400] Register with Password Mismatch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"mismatch_user\",\n  \"email\": \"mismatch@example.com\",\n  \"password\": \"StrongPassword123!\",\n  \"password_confirmation\": \"DifferentPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "register"
+              ]
+            },
+            "description": "Demonstrates 400 Bad Request when password and password_confirmation do not match."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 401] Get Profile Without Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me"
+              ]
+            },
+            "description": "Demonstrates 401 Unauthorized when Authorization header is omitted."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Components",
       "item": [
         {
@@ -24,7 +193,7 @@
                 "components"
               ]
             },
-            "description": "Retrieve all hardware components in the catalog."
+            "description": "Retrieve all hardware components in the catalog (public access)."
           },
           "response": []
         },
@@ -61,7 +230,7 @@
                 }
               ]
             },
-            "description": "Filter components by search query, category_id,manufacturer_id and sort by price."
+            "description": "Filter components by search query, category_id, manufacturer_id and sort by price."
           },
           "response": []
         },
@@ -86,18 +255,22 @@
           "response": []
         },
         {
-          "name": "Create Component (201 Created)",
+          "name": "Create Component [Admin] (201 Created)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"ASUS ROG STRIX B650E-F GAMING WIFI\",\n  \"sku\": \"90MB1BQ0-M0EAY0\",\n  \"price\": 289.99,\n  \"power_watts\": 50,\n  \"popularity_score\": 92,\n  \"description\": \"High-end AM5 ATX motherboard with PCIe 5.0 and WiFi 6E.\",\n  \"specifications\": {\n    \"socket\": \"AM5\",\n    \"memory_type\": \"DDR5\",\n    \"form_factor\": \"ATX\",\n    \"memory_slots\": 4\n  },\n  \"image_url\": \"https://example.com/images/strix-b650e.jpg\",\n  \"manufacturer_id\": 3,\n  \"category_id\": 2\n}"
+              "raw": "{\n  \"name\": \"ASUS ROG STRIX B650E-F GAMING WIFI\",\n  \"sku\": \"90MB1BQ0-M0EAY0\",\n  \"price\": 289.99,\n  \"power_watts\": 50,\n  \"popularity_score\": 5,\n  \"description\": \"High-end AM5 ATX motherboard with PCIe 5.0 and WiFi 6E.\",\n  \"specifications\": {\n    \"socket\": \"AM5\",\n    \"memory_type\": \"DDR5\",\n    \"form_factor\": \"ATX\",\n    \"memory_slots\": 4\n  },\n  \"image_url\": \"https://example.com/images/strix-b650e.jpg\",\n  \"manufacturer_id\": 3,\n  \"category_id\": 2\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/components",
@@ -109,23 +282,27 @@
                 "components"
               ]
             },
-            "description": "Create a new hardware component."
+            "description": "Create a new hardware component (requires admin Bearer token with is_staff=true)."
           },
           "response": []
         },
         {
-          "name": "Update Component (200 OK)",
+          "name": "Update Component [Admin] (200 OK)",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"AMD Ryzen 7 7800X3D\",\n  \"sku\": \"100-100000910WOF\",\n  \"price\": 399.00,\n  \"power_watts\": 120,\n  \"popularity_score\": 99,\n  \"description\": \"8-core, 16-thread desktop processor with 3D V-Cache technology (Price updated).\",\n  \"specifications\": {\n    \"socket\": \"AM5\",\n    \"cores\": 8,\n    \"threads\": 16,\n    \"base_clock_ghz\": 4.2\n  },\n  \"image_url\": \"https://example.com/images/r7-7800x3d.jpg\",\n  \"manufacturer_id\": 1,\n  \"category_id\": 1\n}"
+              "raw": "{\n  \"name\": \"AMD Ryzen 7 7800X3D\",\n  \"sku\": \"100-100000910WOF\",\n  \"price\": 399.00,\n  \"power_watts\": 120,\n  \"popularity_score\": 5,\n  \"description\": \"8-core, 16-thread desktop processor with 3D V-Cache technology (Price updated).\",\n  \"specifications\": {\n    \"socket\": \"AM5\",\n    \"cores\": 8,\n    \"threads\": 16,\n    \"base_clock_ghz\": 4.2\n  },\n  \"image_url\": \"https://example.com/images/r7-7800x3d.jpg\",\n  \"manufacturer_id\": 1,\n  \"category_id\": 1\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/components/1",
@@ -138,15 +315,53 @@
                 "1"
               ]
             },
-            "description": "Update an existing component's details."
+            "description": "Fully update an existing component's details (requires admin Bearer token)."
           },
           "response": []
         },
         {
-          "name": "Delete Component (204 No Content)",
+          "name": "Partially Update Component [Admin] (200 OK)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 389.00,\n  \"popularity_score\": 5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/components/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "components",
+                "1"
+              ]
+            },
+            "description": "Partially update component fields (requires admin Bearer token)."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Component [Admin] (204 No Content)",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/components/6",
               "host": [
@@ -158,7 +373,7 @@
                 "6"
               ]
             },
-            "description": "Delete a component by ID."
+            "description": "Delete a component by ID (requires admin Bearer token)."
           },
           "response": []
         },
@@ -190,6 +405,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
               }
             ],
             "body": {
@@ -206,7 +425,7 @@
                 "components"
               ]
             },
-            "description": "Demonstrates 400 Bad Request when price is negative or zero."
+            "description": "Demonstrates 400 Bad Request when price is negative."
           },
           "response": []
         },
@@ -280,13 +499,17 @@
           "response": []
         },
         {
-          "name": "Create Manufacturer (201 Created)",
+          "name": "Create Manufacturer [Admin] (201 Created)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
               }
             ],
             "body": {
@@ -303,18 +526,22 @@
                 "manufacturers"
               ]
             },
-            "description": "Add a new manufacturer."
+            "description": "Add a new manufacturer (requires admin Bearer token)."
           },
           "response": []
         },
         {
-          "name": "Update Manufacturer (200 OK)",
+          "name": "Update Manufacturer [Admin] (200 OK)",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
               }
             ],
             "body": {
@@ -332,15 +559,53 @@
                 "1"
               ]
             },
-            "description": "Update an existing manufacturer."
+            "description": "Update an existing manufacturer (requires admin Bearer token)."
           },
           "response": []
         },
         {
-          "name": "[ERROR 409] Delete Manufacturer with Existing Components",
+          "name": "Partially Update Manufacturer [Admin] (200 OK)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Leading semiconductor designer of Ryzen CPUs and Radeon GPUs.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/manufacturers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "manufacturers",
+                "1"
+              ]
+            },
+            "description": "Partially update a manufacturer (requires admin Bearer token)."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 409] Delete Manufacturer with Existing Components [Admin]",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/manufacturers/1",
               "host": [
@@ -357,13 +622,17 @@
           "response": []
         },
         {
-          "name": "[ERROR 400] Create Manufacturer with Invalid Founded Year",
+          "name": "[ERROR 400] Create Manufacturer with Invalid Founded Year [Admin]",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
               }
             ],
             "body": {
@@ -449,13 +718,17 @@
           "response": []
         },
         {
-          "name": "Create Category (201 Created)",
+          "name": "Create Category [Admin] (201 Created)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
               }
             ],
             "body": {
@@ -472,18 +745,22 @@
                 "categories"
               ]
             },
-            "description": "Create a new hardware category."
+            "description": "Create a new hardware category (requires admin Bearer token)."
           },
           "response": []
         },
         {
-          "name": "Update Category (200 OK)",
+          "name": "Update Category [Admin] (200 OK)",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
               }
             ],
             "body": {
@@ -501,15 +778,20 @@
                 "1"
               ]
             },
-            "description": "Update an existing category."
+            "description": "Update an existing category (requires admin Bearer token)."
           },
           "response": []
         },
         {
-          "name": "Delete Empty Category (204 No Content)",
+          "name": "Delete Empty Category [Admin] (204 No Content)",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/categories/6",
               "host": [
@@ -526,10 +808,15 @@
           "response": []
         },
         {
-          "name": "[ERROR 409] Delete Category with Existing Components",
+          "name": "[ERROR 409] Delete Category with Existing Components [Admin]",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/categories/1",
               "host": [
@@ -546,13 +833,17 @@
           "response": []
         },
         {
-          "name": "[ERROR 400] Create Category with Invalid max_per_build",
+          "name": "[ERROR 400] Create Category with Invalid max_per_build [Admin]",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
               }
             ],
             "body": {
@@ -594,11 +885,354 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "PC Workbench & Builds",
+      "item": [
+        {
+          "name": "Get Current Workbench Build (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/builds/current",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds",
+                "current"
+              ]
+            },
+            "description": "Retrieve (or initialize) the authenticated user's active draft build with real-time compatibility validation."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Component to Workbench (201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"component_id\": 1,\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/builds/current/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds",
+                "current",
+                "items"
+              ]
+            },
+            "description": "Add a component to the user's active workbench build and run compatibility checks."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Workbench Item Quantity (200 OK)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/builds/current/items/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds",
+                "current",
+                "items",
+                "1"
+              ]
+            },
+            "description": "Update the quantity of a component item in the current workbench (enforces category max_per_build)."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Item from Workbench (204 No Content)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/builds/current/items/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds",
+                "current",
+                "items",
+                "1"
+              ]
+            },
+            "description": "Remove an item from the active workbench build."
+          },
+          "response": []
+        },
+        {
+          "name": "Checkout Current Workbench Build (200 OK)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"ML & 1440p Gaming Rig\",\n  \"is_public\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/builds/current/checkout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds",
+                "current",
+                "checkout"
+              ]
+            },
+            "description": "Finalize the current workbench into a completed build record and optionally make it public."
+          },
+          "response": []
+        },
+        {
+          "name": "List My Completed Builds (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/builds",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds"
+              ]
+            },
+            "description": "Retrieve the authenticated user's history of completed PC builds."
+          },
+          "response": []
+        },
+        {
+          "name": "Browse Public Builds (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/builds/public?is_compatible=true&sort_by=price&order=asc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds",
+                "public"
+              ],
+              "query": [
+                {
+                  "key": "is_compatible",
+                  "value": "true"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "price"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                }
+              ]
+            },
+            "description": "Publicly browse completed community builds with optional search, compatibility filter, and sorting."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Build Details by ID (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/builds/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds",
+                "1"
+              ]
+            },
+            "description": "Retrieve detailed information about a specific build (public builds do not require Authorization header)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Build Title or Visibility (200 OK)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Published Gaming Workstation\",\n  \"is_public\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/builds/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds",
+                "1"
+              ]
+            },
+            "description": "Update title or is_public flag of a completed build owned by the current user."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Build (204 No Content)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/builds/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds",
+                "1"
+              ]
+            },
+            "description": "Delete a build owned by the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "[ERROR 400] Checkout Empty Workbench",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Empty Rig\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/builds/current/checkout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "builds",
+                "current",
+                "checkout"
+              ]
+            },
+            "description": "Demonstrates 400 Bad Request (code: empty_build) when checking out an empty workbench."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
     {
       "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
       "value": ""
     }
   ]
